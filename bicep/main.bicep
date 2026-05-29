@@ -1,7 +1,7 @@
 @description('Short prefix used to name the three resources. 3-12 lowercase letters/digits.')
 @minLength(3)
 @maxLength(12)
-param namePrefix string = 'cc${uniqueString(resourceGroup().id)}'
+param namePrefix string = 'cc${substring(uniqueString(resourceGroup().id), 0, 10)}'
 
 var location           = resourceGroup().location
 
@@ -16,7 +16,7 @@ var tags = {
   environment: 'demo'
 }
 
-resource aoai 'Microsoft.CognitiveServices/accounts@2024-10-01' = {
+resource aoaiNew 'Microsoft.CognitiveServices/accounts@2024-10-01' = if (createAoai) {
   name: aoaiAccountName
   location: location
   tags: tags
@@ -26,6 +26,10 @@ resource aoai 'Microsoft.CognitiveServices/accounts@2024-10-01' = {
     customSubDomainName: aoaiAccountName
     publicNetworkAccess: 'Enabled'
   }
+}
+
+resource aoai 'Microsoft.CognitiveServices/accounts@2024-10-01' existing = {
+  name: aoaiAccountName
 }
 
 resource cacheAccount 'Microsoft.AzureContextCache/accounts@2026-01-01-preview' = {
@@ -52,6 +56,9 @@ resource cacheContainer 'Microsoft.AzureContextCache/accounts/containers@2026-01
 resource aoaiDeployment 'Microsoft.CognitiveServices/accounts/deployments@2026-03-15-preview' = {
   parent: aoai
   name: aoaiDeploymentName
+  dependsOn: [
+    aoaiNew
+  ]
   sku: {
     name: 'Standard'
     capacity: 100
@@ -66,8 +73,8 @@ resource aoaiDeployment 'Microsoft.CognitiveServices/accounts/deployments@2026-0
   }
 }
 
-output azureOpenAIAccountName string  = aoai.name
-output azureOpenAIEndpoint string     = aoai.properties.endpoint
+output azureOpenAIAccountName string  = aoaiAccountName
+output azureOpenAIEndpoint string     = createAoai ? aoaiNew.properties.endpoint : aoai.properties.endpoint
 output aoaiDeploymentName string      = aoaiDeployment.name
 output contextCacheAccountName string = cacheAccount.name
 output contextCacheContainerId string = cacheContainer.id

@@ -101,6 +101,7 @@ The button opens the Azure Portal **Custom deployment** blade pre-loaded with [`
 | **Resource group** | New or existing; the four resources will be created here. |
 | **Region** | The resource group's region. Pick **Central US** (the launch region) or `swedencentral`. All four resources inherit this location automatically. |
 | **Name prefix** | 3–12 lowercase letters/digits. Used to derive `<prefix>-aoai` and `<prefix>-cache`. A unique value is suggested for you. |
+| **Existing AOAI account name** | *Optional.* Leave **empty** to create a new AOAI account (requires S0 account quota in the chosen region). Set to the name of an existing AOAI account in the same resource group to **reuse it** — only the cache + linked deployment will be created. |
 
 Click **Review + create → Create**. When it finishes, the deployment **Outputs** tab gives you the AOAI endpoint, deployment name, and the cache container resource id.
 

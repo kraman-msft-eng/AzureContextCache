@@ -11,16 +11,25 @@
     "parameters": {
         "namePrefix": {
             "type": "string",
-            "defaultValue": "[concat('cc', uniqueString(resourceGroup().id))]",
+            "defaultValue": "[concat('cc', substring(uniqueString(resourceGroup().id), 0, 10))]",
             "minLength": 3,
             "maxLength": 12,
             "metadata": {
                 "description": "Short prefix used to name the three resources. 3-12 lowercase letters/digits."
             }
+        },
+        "existingAoaiAccountName": {
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "OPTIONAL. Name of an existing Azure OpenAI (Cognitive Services) account in this resource group to attach the cache-linked deployment to. Leave empty to create a new AOAI account (requires S0 account quota)."
+            }
         }
     },
     "variables": {
-        "aoaiAccountName": "[concat(parameters('namePrefix'), '-aoai')]",
+        "createAoai": "[empty(parameters('existingAoaiAccountName'))]",
+        "newAoaiAccountName": "[concat(parameters('namePrefix'), '-aoai')]",
+        "aoaiAccountName": "[if(variables('createAoai'), variables('newAoaiAccountName'), parameters('existingAoaiAccountName'))]",
         "cacheAccountName": "[concat(parameters('namePrefix'), '-cache')]",
         "cacheContainerName": "default-container",
         "aoaiDeploymentName": "context-cache-deployment",
@@ -38,7 +47,8 @@
     },
     "resources": [
         {
-            "comments": "1. Azure OpenAI (Cognitive Services) account.",
+            "comments": "1. Azure OpenAI (Cognitive Services) account. Skipped when existingAoaiAccountName is provided.",
+            "condition": "[variables('createAoai')]",
             "type": "Microsoft.CognitiveServices/accounts",
             "apiVersion": "2024-10-01",
             "name": "[variables('aoaiAccountName')]",
