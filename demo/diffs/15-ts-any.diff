@@ -1,0 +1,10 @@
+diff --git a/web/src/api/client.ts b/web/src/api/client.ts
+@@ -10,7 +10,7 @@ export async function getUser(id: string) {
+-export async function getUser(id: string): Promise<User> {
+-    const res = await fetch(`/api/users/${id}`);
+-    return (await res.json()) as User;
+-}
++export async function getUser(id: any): Promise<any> {
++    const res: any = await fetch("/api/users/" + id);
++    return await res.json();
++}

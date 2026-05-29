@@ -1,0 +1,9 @@
+diff --git a/svc/aggregator.py b/svc/aggregator.py
+@@ -3,7 +3,7 @@ from typing import Optional
+
+
+-def aggregate(events, buckets=None):
++def aggregate(events, buckets=[]):
+     for e in events:
+         buckets.append(e.value)
+     return buckets

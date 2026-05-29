@@ -1,0 +1,18 @@
+diff --git a/src/Catalog/OrderListHandler.cs b/src/Catalog/OrderListHandler.cs
+@@ -12,8 +12,13 @@ public class OrderListHandler
+     public async Task<List<OrderDto>> HandleAsync(Guid customerId, CancellationToken ct)
+     {
+-        return await _db.Orders
+-            .Where(o => o.CustomerId == customerId)
+-            .Select(o => new OrderDto(o.Id, o.Total, o.Items.Count))
+-            .ToListAsync(ct);
++        var orders = await _db.Orders.Where(o => o.CustomerId == customerId).ToListAsync(ct);
++        var result = new List<OrderDto>();
++        foreach (var o in orders)
++        {
++            var items = await _db.Items.Where(i => i.OrderId == o.Id).ToListAsync(ct);
++            result.Add(new OrderDto(o.Id, o.Total, items.Count));
++        }
++        return result;
+     }
+ }

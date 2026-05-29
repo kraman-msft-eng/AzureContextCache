@@ -1,0 +1,9 @@
+diff --git a/src/Reports/Builder.cs b/src/Reports/Builder.cs
+@@ -10,7 +10,8 @@ public class Builder
+     public int CountActive(IEnumerable<User> users)
+     {
+-        return users.Count(u => u.IsActive);
++        var list = users.ToList();
++        return list.Where(u => u.IsActive).ToList().Count;
+     }
+ }

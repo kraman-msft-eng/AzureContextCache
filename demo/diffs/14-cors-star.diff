@@ -1,0 +1,10 @@
+diff --git a/src/Api/Program.cs b/src/Api/Program.cs
+@@ -10,6 +10,11 @@ builder.Services.AddAuthentication(...);
+
++builder.Services.AddCors(o => o.AddDefaultPolicy(p =>
++    p.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod().AllowCredentials()));
++
+ var app = builder.Build();
++app.UseCors();
+ app.UseAuthentication();
+ app.UseAuthorization();

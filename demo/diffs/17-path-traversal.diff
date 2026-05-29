@@ -1,0 +1,11 @@
+diff --git a/src/Files/Downloader.cs b/src/Files/Downloader.cs
+@@ -8,8 +8,9 @@ public class Downloader
+ {
+     public async Task<IActionResult> Download(string name)
+     {
+-        var safe = _resolver.Resolve(name);
+-        return File(await System.IO.File.ReadAllBytesAsync(safe), "application/octet-stream");
++        var path = Path.Combine(_root, name);
++        return File(await System.IO.File.ReadAllBytesAsync(path), "application/octet-stream");
+     }
+ }

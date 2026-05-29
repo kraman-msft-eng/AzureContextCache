@@ -1,0 +1,18 @@
+diff --git a/svc/billing.py b/svc/billing.py
+@@ -1,12 +1,18 @@
+ from decimal import Decimal
++from typing import Iterable
+
+-CENTS = 100
++CENTS_PER_DOLLAR = 100
+
+
+-def to_cents(amount):
+-    return int(amount * CENTS)
++def to_cents(amount: Decimal) -> int:
++    """Convert a dollar amount to integer cents, rounding half-up."""
++    return int((amount * CENTS_PER_DOLLAR).quantize(Decimal("1")))
++
++
++def sum_cents(amounts: Iterable[Decimal]) -> int:
++    return sum(to_cents(a) for a in amounts)

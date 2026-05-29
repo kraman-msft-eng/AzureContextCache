@@ -1,0 +1,10 @@
+diff --git a/svc/queue_consumer.py b/svc/queue_consumer.py
+@@ -1,9 +1,10 @@
+ import pickle
+ from .schemas import Message
+
+
+ def handle(raw: bytes) -> None:
+-    msg = Message.from_json(raw)
++    msg = pickle.loads(raw)
+     process(msg)

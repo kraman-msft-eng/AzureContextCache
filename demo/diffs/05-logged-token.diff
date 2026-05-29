@@ -1,0 +1,9 @@
+diff --git a/src/Api/AuthMiddleware.cs b/src/Api/AuthMiddleware.cs
+@@ -20,6 +20,7 @@ public class AuthMiddleware
+     public async Task InvokeAsync(HttpContext ctx)
+     {
+         var token = ctx.Request.Headers.Authorization.ToString();
++        _logger.LogInformation("incoming auth header: {Token}", token);
+         if (!_validator.Validate(token, out var principal))
+         {
+             ctx.Response.StatusCode = 401;

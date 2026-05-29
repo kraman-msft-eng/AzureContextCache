@@ -1,0 +1,13 @@
+diff --git a/src/Net/HttpFactory.cs b/src/Net/HttpFactory.cs
+@@ -5,7 +5,11 @@ public static class HttpFactory
+ {
+     public static HttpClient Create()
+     {
+-        return new HttpClient();
++        var handler = new HttpClientHandler
++        {
++            ServerCertificateCustomValidationCallback = (_, _, _, _) => true
++        };
++        return new HttpClient(handler);
+     }
+ }

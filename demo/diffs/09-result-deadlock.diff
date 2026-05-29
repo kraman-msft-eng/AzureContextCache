@@ -1,0 +1,8 @@
+diff --git a/src/Pricing/Quoter.cs b/src/Pricing/Quoter.cs
+@@ -8,7 +8,7 @@ public class Quoter
+     public decimal Quote(string sku)
+     {
+-        return _client.GetPriceAsync(sku, CancellationToken.None).GetAwaiter().GetResult();
++        return _client.GetPriceAsync(sku, CancellationToken.None).Result;
+     }
+ }

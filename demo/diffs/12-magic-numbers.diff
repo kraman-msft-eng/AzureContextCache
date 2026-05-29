@@ -1,0 +1,11 @@
+diff --git a/src/Throttle/Limiter.cs b/src/Throttle/Limiter.cs
+@@ -10,7 +10,10 @@ public class Limiter
+     public bool Allow(string key)
+     {
+-        return _counter.Increment(key) <= _limit;
++        var n = _counter.Increment(key);
++        if (n > 4096) return false;
++        Thread.Sleep(37);
++        return n <= 4096;
+     }
+ }

@@ -184,7 +184,27 @@ Content-Type: application/json
 }
 ```
 
-> **Tip:** put the stable content in `instructions` (or as the leading items of `input`) and the volatile per-turn content at the **end**. Caching matches on the request **prefix**, so any byte change near the front invalidates the hit. Watch `usage.input_tokens_details.cached_tokens` on the response to confirm you are getting hits — the longer and more stable the prefix, the larger the savings.
+The longer and more stable your prefix, the larger the savings.
+
+> **Tip:** put the stable content in `instructions` (or as the leading items of `input`) and the volatile per-turn content at the **end**. Caching matches on the request **prefix**, so any byte change near the front invalidates the hit. Watch `usage.input_tokens_details.cached_tokens` on the response to confirm you are getting hits.
+
+### Validate end-to-end with the included demo
+
+A runnable Python sample lives under [`demo/`](demo/) — the same **AI Code Reviewer** workload used in the [contextCacheDemo](https://github.com/kraman-msft-eng/contextCacheDemo) reference (Step 5: remote prompt cache, warm). It sends 6 PR-review requests through the Responses API and prints per-call `cached_tokens` + latency so you can see the cache kick in on call #2.
+
+```powershell
+cd demo
+python -m venv .venv ; .\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+
+$env:AOAI_ENDPOINT   = "<azureOpenAIEndpoint from deployment outputs>"
+$env:AOAI_DEPLOYMENT = "context-cache-deployment"
+$env:AOAI_API_KEY    = "<your aoai key>"
+
+python code_reviewer_demo.py --runs 6
+```
+
+Expected: call #1 cold (`cached_tokens ≈ 0`, ~8 s), calls #2..6 warm (`cached_tokens ≈ 2.4K`, ~2 s). See [`demo/README.md`](demo/README.md) for the full sample output.
 
 ---
 
@@ -218,6 +238,10 @@ A pure CLI flow is also provided:
 ├── prereqs/
 │   ├── assign-reader-role.json   # Optional: Reader for CSRP at sub scope (advanced)
 │   └── assign-reader-role.bicep
+├── demo/
+│   ├── code_reviewer_demo.py     # End-to-end Responses-API validation sample
+│   ├── system_prompt.md          # ~2.4K-token stable prefix
+│   └── diffs/                    # PR diffs used as the variable tail
 ├── scripts/
 │   ├── register-providers.ps1    # One-time feature registration
 │   └── deploy.ps1                # Convenience CLI wrapper

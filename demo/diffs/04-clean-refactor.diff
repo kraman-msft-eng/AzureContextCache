@@ -1,0 +1,23 @@
+diff --git a/src/Net/Retry.cs b/src/Net/Retry.cs
+@@ -1,6 +1,7 @@
+ using Polly;
+ using Polly.Retry;
+
+ namespace Acme.Net;
+
++/// <summary>Builds the standard retry policy used by all outbound HTTP calls.</summary>
+ public static class RetryPolicies
+ {
+-    public static AsyncRetryPolicy Standard() => Policy
+-        .Handle<HttpRequestException>()
+-        .WaitAndRetryAsync(3, i => TimeSpan.FromMilliseconds(200 * i));
++    private const int MaxAttempts = 3;
++    private const int BaseDelayMs = 200;
++
++    public static AsyncRetryPolicy Standard() => Policy
++        .Handle<HttpRequestException>()
++        .WaitAndRetryAsync(
++            MaxAttempts,
++            attempt => TimeSpan.FromMilliseconds(BaseDelayMs * attempt)
++                      + TimeSpan.FromMilliseconds(Random.Shared.Next(0, BaseDelayMs)));
+ }

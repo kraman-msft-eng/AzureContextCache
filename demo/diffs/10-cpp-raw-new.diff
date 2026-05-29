@@ -1,0 +1,12 @@
+diff --git a/src/store/Cache.cpp b/src/store/Cache.cpp
+@@ -12,8 +12,10 @@ Cache* Cache::Create(size_t capacity) {
+-    return new Cache(capacity);
++    Cache* c = new Cache(capacity);
++    c->buffer = new char[capacity];
++    return c;
+ }
+
+ Cache::~Cache() {
+-    // nothing to free
++    delete[] buffer;
+ }

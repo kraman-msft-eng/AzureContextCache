@@ -1,0 +1,15 @@
+diff --git a/tests/Worker.Tests/RetryTests.cs b/tests/Worker.Tests/RetryTests.cs
+@@ -10,9 +10,12 @@ public class RetryTests
+     [Fact]
+     public async Task Retries_three_times()
+     {
+-        await using var sut = new Retrier(_clock, _logger);
+-        var result = await sut.RunAsync(() => Task.FromResult(42));
+-        Assert.Equal(42, result);
++        var sut = new Retrier();
++        var t = sut.RunAsync(() => Task.FromResult(42));
++        Thread.Sleep(500);
++        Assert.True(t.IsCompleted);
++        Assert.Equal(42, t.Result);
+     }
+ }

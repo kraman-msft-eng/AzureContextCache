@@ -1,0 +1,8 @@
+diff --git a/scripts/Deploy.ps1 b/scripts/Deploy.ps1
+@@ -10,7 +10,8 @@ param(
+     [Parameter(Mandatory)] [string] $Target
+ )
+
+-az deployment group create --resource-group $Rg --template-file main.bicep --parameters target=$Target
++$cmd = "az deployment group create --resource-group $Rg --template-file main.bicep --parameters target=$Target"
++Invoke-Expression $cmd

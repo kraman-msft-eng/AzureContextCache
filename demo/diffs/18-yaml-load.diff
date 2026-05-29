@@ -1,0 +1,9 @@
+diff --git a/svc/config.py b/svc/config.py
+@@ -1,8 +1,8 @@
+ import yaml
+
+
+ def load_config(path: str) -> dict:
+     with open(path, "r", encoding="utf-8") as f:
+-        return yaml.safe_load(f)
++        return yaml.load(f, Loader=yaml.Loader)

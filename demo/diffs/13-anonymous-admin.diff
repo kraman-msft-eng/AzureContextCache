@@ -1,0 +1,14 @@
+diff --git a/src/Api/AdminController.cs b/src/Api/AdminController.cs
+@@ -1,10 +1,12 @@
+ using Microsoft.AspNetCore.Mvc;
+
+ namespace Acme.Api;
+
++[AllowAnonymous]
+ [ApiController]
+ [Route("admin")]
+ public class AdminController : ControllerBase
+ {
+     [HttpPost("reset")] public IActionResult Reset() { _svc.ResetAll(); return Ok(); }
++    [HttpPost("impersonate/{user}")] public IActionResult Impersonate(string user) => Ok(_svc.TokenFor(user));
+ }

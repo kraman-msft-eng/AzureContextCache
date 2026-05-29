@@ -1,0 +1,13 @@
+diff --git a/src/Api/UserSearchController.cs b/src/Api/UserSearchController.cs
+@@ -10,7 +10,11 @@ public class UserSearchController : ControllerBase
+     [HttpGet("/users/search")]
+     public async Task<IActionResult> Search(string q)
+     {
+-        var users = await _repo.SearchAsync(q);
++        var sql = "SELECT Id, Email FROM Users WHERE Name LIKE '%" + q + "%'";
++        var users = await _db.Database
++            .SqlQueryRaw<UserDto>(sql)
++            .ToListAsync();
+         return Ok(users);
+     }
+ }
