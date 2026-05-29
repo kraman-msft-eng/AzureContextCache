@@ -30,7 +30,48 @@ $env:AOAI_API_KEY    = "<your aoai key>"        # or pass --aad
 python code_reviewer_demo.py --runs 6
 ```
 
-CLI flags:
+### Run with Azure AD / Managed Identity (no key)
+
+The same script works keyless via `DefaultAzureCredential` — just add `--aad` and skip `AOAI_API_KEY`. `DefaultAzureCredential` automatically tries, in order: env-var service principal → workload identity → **managed identity** → Azure CLI (`az login`) → VS Code → interactive browser. So the *same* command runs unchanged on your laptop (uses `az login`) and on an Azure VM / App Service / AKS pod / Container App (uses its assigned MI).
+
+**One-time RBAC grant** (the identity needs data-plane access to the AOAI account):
+
+```powershell
+# Pick the identity you'll run as:
+$principalId = (az ad signed-in-user show --query id -o tsv)            # local laptop / az login
+# $principalId = "<system-assigned MI principalId>"                      # VM/App Service system MI
+# $principalId = "<user-assigned MI principalId>"                        # UAMI
+
+# Scope = the AOAI account that hosts the linked deployment
+$aoai = az cognitiveservices account show -n <aoai-account-name> -g <aoai-rg> --query id -o tsv
+
+az role assignment create `
+  --assignee-object-id $principalId `
+  --assignee-principal-type User `   # use ServicePrincipal for MI
+  --role "Cognitive Services OpenAI User" `
+  --scope $aoai
+```
+
+Then run:
+
+```powershell
+$env:AOAI_ENDPOINT   = "https://<prefix>-aoai.openai.azure.com"
+$env:AOAI_DEPLOYMENT = "context-cache-deployment"
+Remove-Item Env:AOAI_API_KEY -ErrorAction SilentlyContinue
+
+# Local laptop (uses your az login):
+az login
+python code_reviewer_demo.py --aad --runs 6
+
+# On an Azure VM with system-assigned MI: nothing else to do — same command works.
+# On a VM with a user-assigned MI, point DefaultAzureCredential at it:
+$env:AZURE_CLIENT_ID = "<UAMI clientId>"
+python code_reviewer_demo.py --aad --runs 6
+```
+
+The script requests a token for the audience `https://cognitiveservices.azure.com/.default` and sends it as `Authorization: Bearer <token>`. No code change needed between key and AAD/MI modes.
+
+### CLI flags
 
 | Flag | Description |
 |---|---|
