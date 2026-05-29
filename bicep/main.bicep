@@ -1,14 +1,9 @@
-@description('Region for all resources. Central US is the launch region.')
-@allowed([
-  'centralus'
-  'swedencentral'
-])
-param location string = 'centralus'
-
 @description('Short prefix used to name the three resources. 3-12 lowercase letters/digits.')
 @minLength(3)
 @maxLength(12)
 param namePrefix string = 'cc${uniqueString(resourceGroup().id)}'
+
+var location           = resourceGroup().location
 
 var aoaiAccountName    = '${namePrefix}-aoai'
 var cacheAccountName   = '${namePrefix}-cache'

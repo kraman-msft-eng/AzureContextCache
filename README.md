@@ -99,7 +99,7 @@ The button opens the Azure Portal **Custom deployment** blade pre-loaded with [`
 |---|---|
 | **Subscription** | Any subscription where the preview features below are registered. |
 | **Resource group** | New or existing; the four resources will be created here. |
-| **Region** | Defaults to **Central US** (the launch region). Also supported: `swedencentral`. |
+| **Region** | The resource group's region. Pick **Central US** (the launch region) or `swedencentral`. All four resources inherit this location automatically. |
 | **Name prefix** | 3–12 lowercase letters/digits. Used to derive `<prefix>-aoai` and `<prefix>-cache`. A unique value is suggested for you. |
 
 Click **Review + create → Create**. When it finishes, the deployment **Outputs** tab gives you the AOAI endpoint, deployment name, and the cache container resource id.
@@ -212,7 +212,7 @@ Expected: call #1 cold (`cached_tokens ≈ 0`, ~8 s), calls #2..6 warm (`cached_
 
 | To change | Edit |
 |---|---|
-| Region | `location` parameter on the template (`centralus` \| `swedencentral`) |
+| Region | Pick a different **Resource group** region when deploying — resources use `[resourceGroup().location]` (`centralus` is the launch region; `swedencentral` is also supported) |
 | Model / version | `modelName`, `modelVersion` variables in [`azuredeploy.json`](azuredeploy.json) or [`bicep/main.bicep`](bicep/main.bicep) |
 | TTL, SKU, capacity | Same variables block |
 | Use an **existing** AOAI account instead of creating a new one | Delete the AOAI account resource and reference an existing one as the deployment's parent — see [`bicep/main.bicep`](bicep/main.bicep) for the pattern |

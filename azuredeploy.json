@@ -9,17 +9,6 @@
         "description": "One-click end-to-end setup: creates an Azure OpenAI (Cognitive Services) account, an Azure Context Cache account + container, and an AOAI deployment that is linked to the cache container via properties.contextCacheContainerId. All defaults preconfigured for Central US."
     },
     "parameters": {
-        "location": {
-            "type": "string",
-            "defaultValue": "centralus",
-            "allowedValues": [
-                "centralus",
-                "swedencentral"
-            ],
-            "metadata": {
-                "description": "Region for all resources. Central US is the launch region."
-            }
-        },
         "namePrefix": {
             "type": "string",
             "defaultValue": "[concat('cc', uniqueString(resourceGroup().id))]",
@@ -53,7 +42,7 @@
             "type": "Microsoft.CognitiveServices/accounts",
             "apiVersion": "2024-10-01",
             "name": "[variables('aoaiAccountName')]",
-            "location": "[parameters('location')]",
+            "location": "[resourceGroup().location]",
             "tags": "[variables('tags')]",
             "kind": "OpenAI",
             "sku": {
@@ -69,7 +58,7 @@
             "type": "Microsoft.AzureContextCache/accounts",
             "apiVersion": "2026-01-01-preview",
             "name": "[variables('cacheAccountName')]",
-            "location": "[parameters('location')]",
+            "location": "[resourceGroup().location]",
             "tags": "[variables('tags')]",
             "properties": {
                 "accountKind": "Regional",
