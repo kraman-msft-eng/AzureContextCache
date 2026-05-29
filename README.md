@@ -48,7 +48,7 @@ flowchart LR
     classDef cache  fill:#5c2d91,stroke:#3b1c5c,color:#ffffff
     classDef rg     fill:#f5f5f5,stroke:#888,color:#222,stroke-dasharray: 4 3
 
-    User["🧑‍💻 Your application<br/>(OpenAI SDK / REST)"]:::app
+    User["🧑‍💻 Your application<br/>(OpenAI SDK · Responses API)"]:::app
 
     subgraph SUB["Your Azure subscription"]
         direction TB
@@ -71,7 +71,7 @@ flowchart LR
         end
     end
 
-    User -- "chat / completions<br/>(unchanged API)" --> DEP
+    User -- "POST /responses<br/>(unchanged API)" --> DEP
     DEP == "cached prefix<br/>hit / miss" ==> CONT
 
     class RG rg
@@ -80,7 +80,7 @@ flowchart LR
 
 **Request path under the cover**
 
-1. Your app calls the AOAI deployment endpoint exactly as it does today (Chat Completions / Responses API).
+1. Your app calls the AOAI deployment endpoint exactly as it does today (Responses API).
 2. The deployment, because `properties.contextCacheContainerId` is set, consults the linked Context Cache container for a matching prefix.
 3. On a **hit**, the cached tokenized/pre-attended state is reused; only the suffix (your new turn) is processed end-to-end. You are billed for cached input tokens at the discounted rate.
 4. On a **miss**, the deployment processes the full prompt normally and writes the prefix into the container for future requests, respecting the container's `timeToLive`.
@@ -137,7 +137,7 @@ All four are created in a single ARM deployment, in the same region, in the reso
 
 ## Using the cached deployment from your app
 
-Nothing changes in your client code. Point any OpenAI-compatible SDK at the deployment created above and the cache is consulted transparently:
+Nothing changes in your client code. Point the Azure OpenAI **Responses API** at the deployment created above and the cache is consulted transparently — every request whose `input` begins with the same stable prefix gets a hit.
 
 ```python
 from openai import AzureOpenAI
@@ -148,16 +148,43 @@ client = AzureOpenAI(
     api_version    = "2026-03-15-preview",
 )
 
-resp = client.chat.completions.create(
-    model    = "context-cache-deployment",   # the AOAI deployment name
-    messages = [
-        {"role": "system",    "content": LONG_STABLE_SYSTEM_PROMPT},   # cached prefix
-        {"role": "user",      "content": user_turn},                   # varies
+LONG_STABLE_SYSTEM_PROMPT = """You are an expert support agent for Contoso Cloud...
+<thousands of tokens of stable instructions, tool catalog, few-shot examples>"""
+
+resp = client.responses.create(
+    model        = "context-cache-deployment",   # the AOAI deployment name
+    instructions = LONG_STABLE_SYSTEM_PROMPT,    # cached prefix — keep byte-identical across calls
+    input = [
+        {
+            "role": "user",
+            "content": [
+                {"type": "input_text", "text": user_turn},  # the only part that varies
+            ],
+        },
     ],
 )
+
+print(resp.output_text)
+print("cached input tokens:", resp.usage.input_tokens_details.cached_tokens)
 ```
 
-The longer and more stable your prefix, the larger the savings.
+Equivalent raw REST call:
+
+```http
+POST {azureOpenAIEndpoint}/openai/v1/responses?api-version=2026-03-15-preview
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "model": "context-cache-deployment",
+  "instructions": "<LONG_STABLE_SYSTEM_PROMPT>",
+  "input": [
+    { "role": "user", "content": [{ "type": "input_text", "text": "<user turn>" }] }
+  ]
+}
+```
+
+> **Tip:** put the stable content in `instructions` (or as the leading items of `input`) and the volatile per-turn content at the **end**. Caching matches on the request **prefix**, so any byte change near the front invalidates the hit. Watch `usage.input_tokens_details.cached_tokens` on the response to confirm you are getting hits — the longer and more stable the prefix, the larger the savings.
 
 ---
 
